@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Belfast &amp; the Causeway Coast — 27–31 July 2026</title>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12171B;
+    --steel:#1A2127;
+    --steel-2:#222B33;
+    --hair:#313C46;
+    --linen:#E9E6DF;
+    --muted:#8B959E;
+    --crane:#EFB01F;
+
+    --c-meal:#D6564A;
+    --c-pub:#EFB01F;
+    --c-still:#4FB3A5;
+    --c-market:#8C7BD6;
+    --c-air:#4A90D9;
+
+    --display:"Oswald","Haettenschweiler","Arial Narrow",system-ui,sans-serif;
+    --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--ink);color:var(--linen);
+    font-family:var(--body);font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- header ---------- */
+  .masthead{
+    border-bottom:1px solid var(--hair);
+    padding:18px 22px 0;
+    background:linear-gradient(180deg,#161C22 0%,var(--ink) 100%);
+  }
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--crane);margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--display);font-weight:600;text-transform:uppercase;
+    letter-spacing:.04em;font-size:clamp(26px,4.4vw,42px);line-height:1;
+    margin:0 0 8px;
+  }
+  .standfirst{
+    margin:0 0 16px;max-width:64ch;color:var(--muted);font-size:14px;
+  }
+
+  /* ---------- day strip (signature) ---------- */
+  .strip-label{
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:7px;
+  }
+  .daystrip{display:flex;flex-wrap:wrap;gap:0;margin-bottom:14px}
+  .day{
+    appearance:none;cursor:pointer;
+    background:transparent;color:var(--muted);
+    border:1px solid var(--hair);border-right:0;
+    padding:9px 16px 8px;min-width:78px;
+    font-family:var(--display);font-size:13px;font-weight:500;
+    text-transform:uppercase;letter-spacing:.1em;
+    transition:background .15s,color .15s;
+  }
+  .day:last-child{border-right:1px solid var(--hair)}
+  .day .dnum{display:block;font-size:19px;letter-spacing:.02em;color:var(--linen)}
+  .day:hover{background:var(--steel-2);color:var(--linen)}
+  .day[aria-pressed="true"]{
+    background:var(--crane);color:#14181C;border-color:var(--crane);
+  }
+  .day[aria-pressed="true"] .dnum{color:#14181C}
+  .day:focus-visible{outline:2px solid var(--crane);outline-offset:2px;z-index:2;position:relative}
+
+  /* ---------- category chips ---------- */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;padding-bottom:16px}
+  .chip{
+    appearance:none;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--steel);border:1px solid var(--hair);border-radius:2px;
+    color:var(--muted);padding:6px 11px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .chip .swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .chip[aria-pressed="true"]{color:var(--linen);background:var(--steel-2)}
+  .chip[aria-pressed="false"]{opacity:.45}
+  .chip:focus-visible{outline:2px solid var(--crane);outline-offset:2px}
+
+  /* ---------- layout ---------- */
+  .shell{display:grid;grid-template-columns:1fr 400px;height:calc(100vh - 232px);min-height:460px}
+  .mapwrap{position:relative;height:100%;min-height:0}
+  #map{width:100%;height:100%;background:#0C1419}
+
+  /* Light OpenStreetMap tiles are inverted so they sit in the dark shipyard
+     palette and keep their labels legible. The drawn coastline lives in its
+     own pane (.leaflet-drawn-pane) and is deliberately left untouched. */
+  .leaflet-tile-pane{
+    filter:invert(1) hue-rotate(180deg) brightness(.95) contrast(.88) saturate(.7);
+  }
+
+  .basemap-ctl{
+    position:absolute;left:10px;bottom:10px;z-index:600;
+    display:flex;align-items:stretch;gap:0;
+    border:1px solid var(--hair);background:rgba(18,23,27,.92);
+    backdrop-filter:blur(3px);
+  }
+  .basemap-status{
+    padding:6px 10px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    display:flex;align-items:center;gap:6px;
+  }
+  .basemap-status::before{
+    content:"";width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 auto;
+  }
+  .basemap-status.ok{color:#7FC4A8}
+  .basemap-status.warn{color:var(--crane)}
+
+  .leaflet-control-attribution{
+    background:rgba(18,23,27,.85) !important;color:#6E7880 !important;
+    font-size:9.5px !important;
+  }
+  .leaflet-control-attribution a{color:#8B959E !important}
+  .leaflet-container{background:#0C1419;font-family:var(--body)}
+
+  .panel{
+    border-left:1px solid var(--hair);background:var(--steel);
+    overflow-y:auto;padding:0 0 40px;
+  }
+  .panel-head{
+    position:sticky;top:0;z-index:5;background:var(--steel);
+    border-bottom:1px solid var(--hair);padding:12px 18px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .panel-head b{color:var(--crane);font-weight:600}
+
+  /* ---------- cards ---------- */
+  .card{
+    border-bottom:1px solid var(--hair);padding:15px 18px;
+    cursor:pointer;transition:background .15s;position:relative;
+  }
+  .card:hover,.card:focus-visible{background:var(--steel-2);outline:none}
+  .card:focus-visible{box-shadow:inset 0 0 0 2px var(--crane)}
+  .card::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cat);
+  }
+  .card h3{
+    font-family:var(--display);font-weight:500;text-transform:uppercase;
+    letter-spacing:.05em;font-size:16px;margin:0 0 3px;line-height:1.2;
+  }
+  .cat-line{
+    font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--cat);margin-bottom:8px;
+  }
+  .why{font-size:13.5px;color:#C9CDD2;margin:0 0 10px}
+
+  /* day grid — the manifest */
+  .dgrid{display:flex;gap:3px;margin-bottom:9px}
+  .dcell{
+    width:26px;height:20px;display:grid;place-items:center;
+    font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+    border:1px solid var(--hair);color:#5C666F;background:transparent;
+  }
+  .dcell.on{background:var(--cat);border-color:var(--cat);color:#12171B;font-weight:600}
+  .dcell.maybe{border-color:var(--cat);color:var(--cat)}
+
+  .meta{
+    display:flex;flex-wrap:wrap;gap:6px 14px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .meta .flag{color:var(--crane)}
+  .baby{color:#7FC4A8}
+  .nobaby{color:#D6564A}
+
+  /* ---------- popup ---------- */
+  .leaflet-popup-content-wrapper{
+    background:var(--steel-2);color:var(--linen);border-radius:2px;
+    border:1px solid var(--hair);box-shadow:0 12px 34px rgba(0,0,0,.6);
+  }
+  .leaflet-popup-tip{background:var(--steel-2);border:1px solid var(--hair)}
+  .leaflet-popup-content{margin:13px 15px;width:250px !important}
+  .leaflet-popup-close-button{color:var(--muted) !important}
+  .pop h4{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.05em;
+    font-weight:500;font-size:15px;margin:0 0 3px;
+  }
+  .pop .pcat{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+  .pop p{margin:0 0 9px;font-size:13px;color:#C9CDD2}
+  .pop .plinks{display:flex;gap:10px;flex-wrap:wrap}
+  .pop a{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--crane);text-decoration:none;border-bottom:1px solid rgba(239,176,31,.4);
+  }
+  .pop a:hover{border-bottom-color:var(--crane)}
+
+  /* ---------- marker ---------- */
+  .pin{
+    display:block;width:16px;height:16px;border-radius:50%;
+    border:2px solid #12171B;box-shadow:0 0 0 1.5px currentColor,0 2px 6px rgba(0,0,0,.5);
+    background:currentColor;transition:transform .18s;
+  }
+  .pin-wrap.lit .pin{transform:scale(1.55)}
+
+  .road-label{pointer-events:none}
+  .road-label .rlabel{
+    position:absolute;left:0;top:0;transform:translate(-50%,-50%);
+    font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;
+    color:#9FB6C6;background:#131A20;border:1px solid #33454F;
+    padding:1px 4px;border-radius:2px;white-space:nowrap;
+  }
+
+  .town{pointer-events:none}
+  .town .tlabel{
+    position:absolute;left:0;top:0;transform:translate(-50%,-50%);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:#7C8B96;white-space:nowrap;text-shadow:0 1px 3px #0C1419,0 0 6px #0C1419;
+  }
+  .town-big .tlabel{font-size:12px;color:#C3CAD1;letter-spacing:.22em}
+  .town-water .tlabel{color:#41647C;font-style:italic;letter-spacing:.22em}
+
+  .empty{padding:34px 18px;color:var(--muted);font-size:14px}
+  .empty b{color:var(--linen);font-weight:500;display:block;margin-bottom:5px;font-family:var(--display);text-transform:uppercase;letter-spacing:.05em}
+
+  .footnote{
+    padding:16px 18px;color:#6E7880;font-size:11.5px;line-height:1.6;
+    border-top:1px solid var(--hair);font-family:var(--mono);
+  }
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr;height:auto}
+    .mapwrap{height:52vh;min-height:320px}
+    #map{height:100%}
+    .panel{border-left:0;border-top:1px solid var(--hair);max-height:none;overflow:visible}
+    .day{min-width:0;flex:1 1 0;padding:8px 6px}
+    .masthead{padding:14px 16px 0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important}
+    html{scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow">Four adults + one infant · one rental car</p>
+  <h1>Belfast &amp; the Causeway Coast</h1>
+  <p class="standfirst">Eighteen things you can only do here, mapped. Half the city shuts Sunday to Tuesday — pick a day to see what's actually open.</p>
+
+  <p class="strip-label">Filter by day</p>
+  <div class="daystrip" id="daystrip" role="group" aria-label="Filter by day"></div>
+
+  <div class="chips" id="chips" role="group" aria-label="Filter by type of activity"></div>
+</header>
+
+<div class="shell">
+  <div class="mapwrap">
+    <div id="map"></div>
+    <div class="basemap-ctl">
+      <span class="basemap-status" id="basemap-status">Loading map…</span>
+    </div>
+  </div>
+  <aside class="panel">
+    <div class="panel-head" id="panelhead"></div>
+    <div id="list"></div>
+    <p class="footnote">
+      Day availability from venue listings, July 2026. Cells: filled = open, outlined = unconfirmed, empty = closed.
+      Ring ahead before travelling — festival week shifts hours.<br>Street map © OpenStreetMap contributors. Coastline and roads from Natural Earth, drawn into this file as an offline fallback for when tiles won't load. Tap any pin for a Google Maps link.
+    </p>
+  </aside>
+</div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="basemap.js"></script>
+<script src="data.js"></script>
+<script>
+/* ---------- trip calendar ---------- */
+// day arrays are indexed [Mon27, Tue28, Wed29, Thu30, Fri31]
+const DAYS = [
+  {key:0, dow:"Mon", num:"27"},
+  {key:1, dow:"Tue", num:"28"},
+  {key:2, dow:"Wed", num:"29"},
+  {key:3, dow:"Thu", num:"30"},
+  {key:4, dow:"Fri", num:"31"}
+];
+const DLETTER = ["M","T","W","T","F"];
+
+// "Today" default: if the system date falls inside the trip (27–31 Jul 2026),
+// open on that day. Otherwise show all five.
+function todayIndex(){
+  const now = new Date();
+  if (now.getFullYear() === 2026 && now.getMonth() === 6){   // July = month 6
+    const d = now.getDate();
+    if (d >= 27 && d <= 31) return d - 27;
+  }
+  return null;
+}
+
+let activeDay = todayIndex();               // null = all days
+let activeCats = new Set(Object.keys(CATS));
+
+/* ---------- map ---------- */
+const map = L.map("map", {
+  scrollWheelZoom:true, zoomControl:true,
+  minZoom:8, maxZoom:18,
+  maxBounds:[[54.05,-7.85],[55.72,-4.95]], maxBoundsViscosity:0.75
+}).setView([54.92, -6.25], 9);
+
+/* Drawn coastline sits in its own pane BELOW the street tiles, so it is the
+   guaranteed fallback if the tile server is unreachable. */
+map.createPane("drawn");
+map.getPane("drawn").style.zIndex = 150;
+
+L.geoJSON(COAST, {
+  pane:"drawn",
+  style: f => f.properties.kind === "land"
+    ? {fillColor:"#1F272E", fillOpacity:1, color:"#3C5A6E", weight:1, lineJoin:"round"}
+    : {fillColor:"#0C1419", fillOpacity:1, color:"#3C5A6E", weight:.8}
+}).addTo(map);
+
+// Regional road network (Natural Earth). Drawn twice: a wide dark casing, then
+// the road itself, so junctions read cleanly against the land fill.
+[
+  {colour:"#101820", w:{1:5.0, 2:3.4, 3:2.2}},
+  {colour:"#6E8FA6", w:{1:2.6, 2:1.6, 3:1.0}}
+].forEach(pass => {
+  L.geoJSON(ROADS, {
+    pane:"drawn",
+    style: f => ({
+      color:pass.colour,
+      weight:pass.w[f.properties.r] || 1,
+      opacity: pass.colour === "#101820" ? .9 : (f.properties.r === 1 ? .95 : .6),
+      lineCap:"round", lineJoin:"round"
+    })
+  }).addTo(map);
+});
+
+const roadLabelLayer = L.layerGroup(
+  ROADLABELS.map(r => L.marker([r.lat, r.lng], {
+    interactive:false, keyboard:false,
+    icon:L.divIcon({className:"road-label", html:`<span class="rlabel">${r.n}</span>`, iconSize:[0,0]})
+  }))
+).addTo(map);
+
+const TOWNS = [
+  {n:"BELFAST",     lat:54.5970, lng:-5.9300, big:true},
+  {n:"Portrush",    lat:55.2050, lng:-6.6540},
+  {n:"Portstewart", lat:55.1860, lng:-6.7220},
+  {n:"Bushmills",   lat:55.2029, lng:-6.5172},
+  {n:"Ballycastle", lat:55.2040, lng:-6.2450},
+  {n:"Coleraine",   lat:55.1320, lng:-6.6680},
+  {n:"Ballymena",   lat:54.8640, lng:-6.2760},
+  {n:"Bangor",      lat:54.6540, lng:-5.6680},
+  {n:"Lough Neagh", lat:54.6100, lng:-6.4100, water:true},
+  {n:"North Channel", lat:55.0500, lng:-5.5200, water:true}
+];
+const townLayer = L.layerGroup(
+  TOWNS.map(t => L.marker([t.lat, t.lng], {
+    interactive:false, keyboard:false,
+    icon:L.divIcon({
+      className:"town" + (t.big ? " town-big" : "") + (t.water ? " town-water" : ""),
+      html:`<span class="tlabel">${t.n}</span>`, iconSize:[0,0]
+    })
+  }))
+).addTo(map);
+
+/* ---------- street tiles ----------
+   OpenStreetMap standard, straight in. The drawn coastline underneath is the
+   fallback: if no tile ever loads (bad wifi, dead SIM on the Causeway Coast),
+   we keep the drawn town + road labels on so the map still reads. Once real
+   tiles arrive they carry their own labels, so we drop the drawn ones. */
+const statusEl = document.getElementById("basemap-status");
+function setStatus(text, cls){
+  statusEl.textContent = text;
+  statusEl.className = "basemap-status " + (cls || "");
+}
+
+const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution:"&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
+  maxZoom:19, maxNativeZoom:19
+});
+
+let tilesLive = false;
+tiles.on("tileload", () => {
+  if (tilesLive) return;
+  tilesLive = true;
+  setStatus("Streets", "ok");
+  map.removeLayer(townLayer);          // tiles carry their own labels
+  map.removeLayer(roadLabelLayer);
+});
+tiles.on("tileerror", () => {
+  if (!tilesLive) setStatus("Offline — drawn map", "warn");
+});
+tiles.addTo(map);
+
+// A blocked tile host must never break the page — the drawn basemap and the
+// list stand on their own. Swallow tile image errors so the console stays clean.
+window.addEventListener("error", e => {
+  if (e && e.target && e.target.tagName === "IMG") { e.preventDefault(); return true; }
+}, true);
+
+/* ---------- markers ---------- */
+function popupHTML(p, colour){
+  const gmaps = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+  const tel = p.tel ? `<a href="tel:${p.tel}">Call</a>` : "";
+  return `<div class="pop">
+    <h4>${p.name}</h4>
+    <div class="pcat" style="color:${colour}">${CATS[p.cat].label} · ${p.area}</div>
+    <p>${p.why}</p>
+    <div class="plinks">
+      <a href="${gmaps}" target="_blank" rel="noopener">Open in Maps</a>
+      <a href="${p.url}" target="_blank" rel="noopener">Details</a>
+      ${tel}
+    </div>
+  </div>`;
+}
+
+const markers = PLACES.map((p, i) => {
+  const colour = CATS[p.cat].color;
+  const m = L.marker([p.lat, p.lng], {
+    title:p.name,
+    keyboard:false,
+    icon:L.divIcon({
+      className:"pin-wrap",
+      html:`<span class="pin" style="color:${colour}"></span>`,
+      iconSize:[16,16], iconAnchor:[8,8], popupAnchor:[0,-9]
+    })
+  });
+  // autoPan is Leaflet's default: it nudges the popup fully on screen without
+  // changing zoom. We never call setView/zoom here — that was wrong before.
+  m.bindPopup(popupHTML(p, colour), {autoPan:true});
+  // Clicking a marker brings its list card into view — but only inside the
+  // panel, never scrolling the page.
+  m.on("popupopen", () => scrollCardIntoPanel(i));
+  return m;
+});
+
+/* ---------- controls ---------- */
+const stripEl = document.getElementById("daystrip");
+stripEl.appendChild(mkDay(null, "All", "27–31"));
+DAYS.forEach(d => stripEl.appendChild(mkDay(d.key, d.dow, d.num)));
+
+function mkDay(key, dow, num){
+  const b = document.createElement("button");
+  b.className = "day";
+  b.type = "button";
+  b.setAttribute("aria-pressed", String(activeDay === key));
+  b.innerHTML = `${dow}<span class="dnum">${num}</span>`;
+  b.addEventListener("click", () => {
+    activeDay = key;
+    [...stripEl.children].forEach(c => c.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    render();
+  });
+  return b;
+}
+
+const chipsEl = document.getElementById("chips");
+Object.entries(CATS).forEach(([key, c]) => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.type = "button";
+  b.setAttribute("aria-pressed","true");
+  b.innerHTML = `<span class="swatch" style="background:${c.color}"></span>${c.label}`;
+  b.addEventListener("click", () => {
+    const on = b.getAttribute("aria-pressed") === "true";
+    if (on){ activeCats.delete(key); b.setAttribute("aria-pressed","false"); }
+    else { activeCats.add(key); b.setAttribute("aria-pressed","true"); }
+    render();
+  });
+  chipsEl.appendChild(b);
+});
+
+/* ---------- render ---------- */
+const listEl = document.getElementById("list");
+const headEl = document.getElementById("panelhead");
+const panelEl = document.querySelector(".panel");
+
+function visible(p){
+  if (!activeCats.has(p.cat)) return false;
+  if (activeDay === null) return true;
+  return p.days[activeDay] !== 0;         // closed (0) hidden; open (1) & unconfirmed (2) stay
+}
+
+function render(){
+  const shown = PLACES.map((p,i) => ({p,i})).filter(o => visible(o.p));
+
+  markers.forEach((m,i) => {
+    const on = visible(PLACES[i]);
+    if (on && !map.hasLayer(m)) m.addTo(map);
+    if (!on && map.hasLayer(m)) map.removeLayer(m);
+  });
+
+  const dayName = activeDay === null
+    ? "all five days"
+    : `${DAYS[activeDay].dow} ${DAYS[activeDay].num} July`;
+  headEl.innerHTML = `<b>${shown.length}</b> open · ${dayName}`;
+
+  if (!shown.length){
+    listEl.innerHTML = `<div class="empty"><b>Nothing matches</b>Turn a category back on, or choose another day.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = shown.map(({p,i}) => {
+    const colour = CATS[p.cat].color;
+    const cells = p.days.map((v,di) => {
+      const cls = v === 1 ? "dcell on" : v === 2 ? "dcell maybe" : "dcell";
+      return `<span class="${cls}" title="${DAYS[di].dow} ${DAYS[di].num}">${DLETTER[di]}</span>`;
+    }).join("");
+    const babyCls = /not suitable/i.test(p.baby) ? "nobaby" : "baby";
+    return `<article class="card" data-idx="${i}" tabindex="0" role="button"
+                     aria-label="${p.name}" style="--cat:${colour}">
+      <h3>${p.name}</h3>
+      <div class="cat-line">${CATS[p.cat].label}</div>
+      <p class="why">${p.why}</p>
+      <div class="dgrid" aria-hidden="true">${cells}</div>
+      <div class="meta">
+        <span>${p.cost}</span>
+        <span>${p.area}</span>
+        <span class="${babyCls}">${p.baby}</span>
+        <span class="flag">${p.flag}</span>
+      </div>
+    </article>`;
+  }).join("");
+
+  listEl.querySelectorAll(".card").forEach(card => {
+    const idx = +card.dataset.idx;
+    const go = () => { markers[idx].openPopup(); };   // popup only — no zoom, no recentre
+    card.addEventListener("click", go);
+    card.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); }
+    });
+    card.addEventListener("mouseenter", () => lightPin(idx, true));
+    card.addEventListener("mouseleave", () => lightPin(idx, false));
+  });
+}
+
+function lightPin(idx, on){
+  const el = markers[idx].getElement();
+  if (el) el.classList.toggle("lit", on);
+}
+
+// Scroll the matching card into view WITHIN the panel only. On mobile the panel
+// isn't an independent scroll container, so this is a no-op and the page never
+// jumps away from the map.
+function scrollCardIntoPanel(idx){
+  const card = listEl.querySelector(`.card[data-idx="${idx}"]`);
+  if (!card) return;
+  const pr = panelEl.getBoundingClientRect();
+  const cr = card.getBoundingClientRect();
+  if (cr.top < pr.top){
+    panelEl.scrollTop -= (pr.top - cr.top) + 12;
+  } else if (cr.bottom > pr.bottom){
+    panelEl.scrollTop += (cr.bottom - pr.bottom) + 12;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
