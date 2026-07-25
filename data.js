@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
    Belfast trip data — edit here, in one place.
 
-   Categories and their colours, then the eighteen places. Each place carries a
+   Categories and their colours, then the seventeen places. Each place carries a
    five-state day array indexed [Mon 27, Tue 28, Wed 29, Thu 30, Fri 31]:
        1 = open
        0 = closed
@@ -21,14 +21,14 @@ const CATS = {
 // 1 = open, 0 = closed, 2 = unconfirmed / booking-dependent
 const PLACES = [
   {
-    name:"Holohan's at the Barge", cat:"meal",
-    lat:54.5972157, lng:-5.9210473,
-    days:[2,2,1,1,1],
-    why:"Dinner on a moored coal barge on the Lagan, serving boxty — the potato pancake born of Ulster poorhouse cooking.",
-    cost:"££", area:"Lanyon Quay", baby:"Pram tight",
-    flag:"Book ahead — few seats aboard",
-    tel:"+442890235973",
-    url:"https://wanderlog.com/place/details/485766/holohans-at-the-barge"
+    name:"Holohan's Pantry", cat:"meal",
+    lat:54.5861332, lng:-5.9363915,
+    days:[1,1,1,1,1],
+    why:"Belfast's only dedicated Irish restaurant. Still the place for boxty — the potato pancake born of Ulster poorhouse cooking. Family-run; absorbed their floating restaurant when it closed.",
+    cost:"££", area:"Queen's Quarter", baby:"Small room — book and flag the pram",
+    flag:"Wed opens 4pm · booking advised",
+    tel:"+442890291103",
+    url:"https://wanderlog.com/place/details/856371/holohans-pantry"
   },
   {
     name:"St George's Market", cat:"market",
@@ -136,15 +136,6 @@ const PLACES = [
     why:"3.5km self-guided walk through the streets that shaped Astral Weeks, ending at a square of Narnia bronzes. £1 map from the visitor centre.",
     cost:"£1 map", area:"East Belfast", baby:"Flat, pram-friendly",
     flag:"Pairs with Bullhouse and Boundary",
-    url:"https://www.visiteastside.com/listing/van-morrison-trail"
-  },
-  {
-    name:"Cyprus Avenue", cat:"meal",
-    lat:54.5961472, lng:-5.8755534,
-    days:[2,2,2,2,2],
-    why:"The restaurant named for Van Morrison's song, on the avenue itself.",
-    cost:"££", area:"Upper Newtownards Rd", baby:"Family restaurant",
-    flag:"Status disputed — reported closed Jan 2026. Call first",
     url:"https://www.visiteastside.com/listing/van-morrison-trail"
   },
   {
