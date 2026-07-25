@@ -17,7 +17,7 @@ import json
 import urllib.request
 from shapely.geometry import shape, box, mapping
 
-BBOX = box(-7.65, 54.15, -5.15, 55.60)   # Belfast through to Portstewart
+BBOX = box(-8.10, 52.85, -5.05, 55.62)   # Dublin/Wicklow up through to Portstewart
 NE = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/"
 TOL = 0.0012                              # ~130m; plenty at zoom 8-12
 
@@ -93,7 +93,7 @@ def build_roads():
                 longest[label] = (seg.length, seg)
 
     labels = []
-    for name in ("A2", "M2", "A4"):           # the roads that matter for this trip
+    for name in ("A2", "M2", "A4", "M1", "M50", "N11"):   # roads that matter for this trip
         if name in longest:
             pt = longest[name][1].interpolate(0.5, normalized=True)
             labels.append({"n": name, "lat": round(pt.y, 4), "lng": round(pt.x, 4)})

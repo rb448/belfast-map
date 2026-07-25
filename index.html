@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Belfast &amp; the Causeway Coast — 27–31 July 2026</title>
+<title>Belfast &amp; Dublin — 27 Jul–4 Aug 2026</title>
 <link rel="stylesheet" href="vendor/leaflet.css">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -21,6 +21,7 @@
     --c-still:#4FB3A5;
     --c-market:#8C7BD6;
     --c-air:#4A90D9;
+    --c-see:#D98A3D;
 
     --display:"Oswald","Haettenschweiler","Arial Narrow",system-ui,sans-serif;
     --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -53,6 +54,23 @@
   .standfirst{
     margin:0 0 16px;max-width:64ch;color:var(--muted);font-size:14px;
   }
+
+  /* ---------- leg switcher ---------- */
+  .viewswitch{display:flex;gap:0;margin:0 0 16px;border:1px solid var(--hair);width:max-content;max-width:100%}
+  .viewbtn{
+    appearance:none;cursor:pointer;background:transparent;color:var(--muted);
+    border:0;border-right:1px solid var(--hair);padding:8px 18px;
+    font-family:var(--display);font-size:14px;font-weight:500;
+    text-transform:uppercase;letter-spacing:.1em;
+    display:flex;flex-direction:column;line-height:1.15;
+    transition:background .15s,color .15s;
+  }
+  .viewbtn:last-child{border-right:0}
+  .viewbtn small{font-family:var(--mono);font-size:9px;letter-spacing:.1em;opacity:.85;text-transform:none;margin-top:2px}
+  .viewbtn:hover{background:var(--steel-2);color:var(--linen)}
+  .viewbtn[aria-pressed="true"]{background:var(--crane);color:#14181C}
+  .viewbtn[aria-pressed="true"]:hover{background:var(--crane);color:#14181C}
+  .viewbtn:focus-visible{outline:2px solid var(--crane);outline-offset:2px;z-index:2}
 
   /* ---------- day strip (signature) ---------- */
   .strip-label{
@@ -94,7 +112,7 @@
   .chip:focus-visible{outline:2px solid var(--crane);outline-offset:2px}
 
   /* ---------- layout ---------- */
-  .shell{display:grid;grid-template-columns:1fr 400px;height:calc(100vh - 232px);min-height:460px}
+  .shell{display:grid;grid-template-columns:1fr 400px;height:calc(100vh - 300px);min-height:460px}
   .mapwrap{position:relative;height:100%;min-height:0}
   #map{width:100%;height:100%;background:#0C1419}
 
@@ -240,6 +258,8 @@
     #map{height:100%}
     .panel{border-left:0;border-top:1px solid var(--hair);max-height:none;overflow:visible}
     .day{min-width:0;flex:1 1 0;padding:8px 6px}
+    .viewbtn{flex:1 1 0}
+    .viewswitch{width:100%}
     .masthead{padding:14px 16px 0}
   }
   @media (prefers-reduced-motion:reduce){
@@ -252,8 +272,10 @@
 
 <header class="masthead">
   <p class="eyebrow">Four adults + one infant · one rental car</p>
-  <h1>Belfast &amp; the Causeway Coast</h1>
-  <p class="standfirst">Seventeen things you can only do here, mapped. Half the city shuts Sunday to Tuesday — pick a day to see what's actually open.</p>
+  <h1 id="mast-title">Belfast &amp; the Causeway Coast</h1>
+  <p class="standfirst" id="mast-standfirst">Belfast and the Causeway Coast — the food, drink and sights worth the trip, mapped. Half the city shuts Sunday to Tuesday, so pick a day to see what's open.</p>
+
+  <div class="viewswitch" id="viewswitch" role="group" aria-label="Choose the leg of the trip"></div>
 
   <p class="strip-label">Filter by day</p>
   <div class="daystrip" id="daystrip" role="group" aria-label="Filter by day"></div>
@@ -273,7 +295,7 @@
     <div id="list"></div>
     <p class="footnote">
       Day availability from venue listings, July 2026. Cells: filled = open, outlined = unconfirmed, empty = closed.
-      Ring ahead before travelling — festival week shifts hours.<br>Street map © OpenStreetMap contributors. Coastline and roads from Natural Earth, drawn into this file as an offline fallback for when tiles won't load. Tap any pin for a Google Maps link.
+      Ring ahead before travelling — festival and bank-holiday weeks shift hours.<br>Street map © OpenStreetMap contributors. Coastline and roads from Natural Earth, drawn in as an offline fallback for when tiles won't load. Tap any pin for a Google Maps link.
     </p>
   </aside>
 </div>
@@ -282,40 +304,37 @@
 <script src="basemap.js"></script>
 <script src="data.js"></script>
 <script>
-/* ---------- trip calendar ---------- */
-// day arrays are indexed [Mon27, Tue28, Wed29, Thu30, Fri31]
-const DAYS = [
-  {key:0, dow:"Mon", num:"27"},
-  {key:1, dow:"Tue", num:"28"},
-  {key:2, dow:"Wed", num:"29"},
-  {key:3, dow:"Thu", num:"30"},
-  {key:4, dow:"Fri", num:"31"}
-];
-const DLETTER = ["M","T","W","T","F"];
+/* ---------- state ---------- */
+let currentKey = null;                      // set by switchView on first run
+let activeDay  = null;                       // null = all days
+let activeCats = new Set(Object.keys(CATS));
 
-// "Today" default: if the system date falls inside the trip (27–31 Jul 2026),
-// open on that day. Otherwise show all five.
-function todayIndex(){
+const titleEl      = document.getElementById("mast-title");
+const standfirstEl = document.getElementById("mast-standfirst");
+const viewswitchEl = document.getElementById("viewswitch");
+const stripEl      = document.getElementById("daystrip");
+const chipsEl      = document.getElementById("chips");
+const listEl       = document.getElementById("list");
+const headEl       = document.getElementById("panelhead");
+const panelEl      = document.querySelector(".panel");
+const statusEl     = document.getElementById("basemap-status");
+
+/* "Today" default: if the system date falls inside a leg, open on that day. */
+function todayIndex(V){
   const now = new Date();
-  if (now.getFullYear() === 2026 && now.getMonth() === 6){   // July = month 6
+  if (now.getFullYear() === 2026 && now.getMonth() === V.todayMonth){
     const d = now.getDate();
-    if (d >= 27 && d <= 31) return d - 27;
+    if (d >= V.todayRange[0] && d <= V.todayRange[1]) return d - V.todayRange[0];
   }
   return null;
 }
 
-let activeDay = todayIndex();               // null = all days
-let activeCats = new Set(Object.keys(CATS));
-
-/* ---------- map ---------- */
+/* ---------- map (shared; drawn basemap covers both legs) ---------- */
 const map = L.map("map", {
   scrollWheelZoom:true, zoomControl:true,
-  minZoom:8, maxZoom:18,
-  maxBounds:[[54.05,-7.85],[55.72,-4.95]], maxBoundsViscosity:0.75
-}).setView([54.92, -6.25], 9);
+  minZoom:7, maxZoom:18, maxBoundsViscosity:0.75
+}).setView(VIEWS.belfast.center, VIEWS.belfast.zoom);
 
-/* Drawn coastline sits in its own pane BELOW the street tiles, so it is the
-   guaranteed fallback if the tile server is unreachable. */
 map.createPane("drawn");
 map.getPane("drawn").style.zIndex = 150;
 
@@ -326,8 +345,6 @@ L.geoJSON(COAST, {
     : {fillColor:"#0C1419", fillOpacity:1, color:"#3C5A6E", weight:.8}
 }).addTo(map);
 
-// Regional road network (Natural Earth). Drawn twice: a wide dark casing, then
-// the road itself, so junctions read cleanly against the land fill.
 [
   {colour:"#101820", w:{1:5.0, 2:3.4, 3:2.2}},
   {colour:"#6E8FA6", w:{1:2.6, 2:1.6, 3:1.0}}
@@ -350,64 +367,32 @@ const roadLabelLayer = L.layerGroup(
   }))
 ).addTo(map);
 
-const TOWNS = [
-  {n:"BELFAST",     lat:54.5970, lng:-5.9300, big:true},
-  {n:"Portrush",    lat:55.2050, lng:-6.6540},
-  {n:"Portstewart", lat:55.1860, lng:-6.7220},
-  {n:"Bushmills",   lat:55.2029, lng:-6.5172},
-  {n:"Ballycastle", lat:55.2040, lng:-6.2450},
-  {n:"Coleraine",   lat:55.1320, lng:-6.6680},
-  {n:"Ballymena",   lat:54.8640, lng:-6.2760},
-  {n:"Bangor",      lat:54.6540, lng:-5.6680},
-  {n:"Lough Neagh", lat:54.6100, lng:-6.4100, water:true},
-  {n:"North Channel", lat:55.0500, lng:-5.5200, water:true}
-];
-const townLayer = L.layerGroup(
-  TOWNS.map(t => L.marker([t.lat, t.lng], {
-    interactive:false, keyboard:false,
-    icon:L.divIcon({
-      className:"town" + (t.big ? " town-big" : "") + (t.water ? " town-water" : ""),
-      html:`<span class="tlabel">${t.n}</span>`, iconSize:[0,0]
-    })
-  }))
-).addTo(map);
+let townLayer = null;     // rebuilt per leg
+let markers   = [];       // rebuilt per leg
 
-/* ---------- street tiles ----------
-   OpenStreetMap standard, straight in. The drawn coastline underneath is the
-   fallback: if no tile ever loads (bad wifi, dead SIM on the Causeway Coast),
-   we keep the drawn town + road labels on so the map still reads. Once real
-   tiles arrive they carry their own labels, so we drop the drawn ones. */
-const statusEl = document.getElementById("basemap-status");
-function setStatus(text, cls){
-  statusEl.textContent = text;
-  statusEl.className = "basemap-status " + (cls || "");
-}
+/* ---------- street tiles (OSM; drawn basemap is the offline fallback) ---------- */
+function setStatus(text, cls){ statusEl.textContent = text; statusEl.className = "basemap-status " + (cls||""); }
 
 const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution:"&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors",
   maxZoom:19, maxNativeZoom:19
 });
-
 let tilesLive = false;
 tiles.on("tileload", () => {
   if (tilesLive) return;
   tilesLive = true;
   setStatus("Streets", "ok");
-  map.removeLayer(townLayer);          // tiles carry their own labels
-  map.removeLayer(roadLabelLayer);
+  if (townLayer && map.hasLayer(townLayer)) map.removeLayer(townLayer);   // tiles carry labels
+  if (map.hasLayer(roadLabelLayer)) map.removeLayer(roadLabelLayer);
 });
-tiles.on("tileerror", () => {
-  if (!tilesLive) setStatus("Offline — drawn map", "warn");
-});
+tiles.on("tileerror", () => { if (!tilesLive) setStatus("Offline — drawn map", "warn"); });
 tiles.addTo(map);
 
-// A blocked tile host must never break the page — the drawn basemap and the
-// list stand on their own. Swallow tile image errors so the console stays clean.
 window.addEventListener("error", e => {
   if (e && e.target && e.target.tagName === "IMG") { e.preventDefault(); return true; }
 }, true);
 
-/* ---------- markers ---------- */
+/* ---------- popups + markers ---------- */
 function popupHTML(p, colour){
   const gmaps = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
   const tel = p.tel ? `<a href="tel:${p.tel}">Call</a>` : "";
@@ -423,85 +408,132 @@ function popupHTML(p, colour){
   </div>`;
 }
 
-const markers = PLACES.map((p, i) => {
-  const colour = CATS[p.cat].color;
-  const m = L.marker([p.lat, p.lng], {
-    title:p.name,
-    keyboard:false,
-    icon:L.divIcon({
-      className:"pin-wrap",
-      html:`<span class="pin" style="color:${colour}"></span>`,
-      iconSize:[16,16], iconAnchor:[8,8], popupAnchor:[0,-9]
-    })
+function buildMarkers(V){
+  return V.places.map((p, i) => {
+    const colour = CATS[p.cat].color;
+    const m = L.marker([p.lat, p.lng], {
+      title:p.name, keyboard:false,
+      icon:L.divIcon({
+        className:"pin-wrap",
+        html:`<span class="pin" style="color:${colour}"></span>`,
+        iconSize:[16,16], iconAnchor:[8,8], popupAnchor:[0,-9]
+      })
+    });
+    m.bindPopup(popupHTML(p, colour), {autoPan:true});   // autoPan nudge only — never setView/zoom
+    m.on("popupopen", () => scrollCardIntoPanel(i));
+    return m;
   });
-  // autoPan is Leaflet's default: it nudges the popup fully on screen without
-  // changing zoom. We never call setView/zoom here — that was wrong before.
-  m.bindPopup(popupHTML(p, colour), {autoPan:true});
-  // Clicking a marker brings its list card into view — but only inside the
-  // panel, never scrolling the page.
-  m.on("popupopen", () => scrollCardIntoPanel(i));
-  return m;
+}
+
+/* ---------- leg switcher ---------- */
+Object.entries(VIEWS).forEach(([key, V]) => {
+  const b = document.createElement("button");
+  b.className = "viewbtn"; b.type = "button"; b.dataset.key = key;
+  b.setAttribute("aria-pressed", "false");
+  b.innerHTML = `${V.switchLabel}<small>${V.switchDates}</small>`;
+  b.addEventListener("click", () => switchView(key));
+  viewswitchEl.appendChild(b);
 });
 
-/* ---------- controls ---------- */
-const stripEl = document.getElementById("daystrip");
-stripEl.appendChild(mkDay(null, "All", "27–31"));
-DAYS.forEach(d => stripEl.appendChild(mkDay(d.key, d.dow, d.num)));
+function switchView(key){
+  if (key === currentKey) return;
+  currentKey = key;
+  const V = VIEWS[key];
 
+  titleEl.textContent = V.title;
+  standfirstEl.textContent = V.standfirst;
+  [...viewswitchEl.children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.key === key)));
+
+  // swap markers
+  markers.forEach(m => { if (map.hasLayer(m)) map.removeLayer(m); });
+  markers = buildMarkers(V);
+
+  // swap drawn town labels (only shown when tiles are unavailable)
+  if (townLayer && map.hasLayer(townLayer)) map.removeLayer(townLayer);
+  townLayer = L.layerGroup(
+    V.towns.map(t => L.marker([t.lat, t.lng], {
+      interactive:false, keyboard:false,
+      icon:L.divIcon({
+        className:"town" + (t.big ? " town-big" : "") + (t.water ? " town-water" : ""),
+        html:`<span class="tlabel">${t.n}</span>`, iconSize:[0,0]
+      })
+    }))
+  );
+  if (!tilesLive) townLayer.addTo(map);
+
+  // reposition the map to the leg (this is a deliberate view change, not a card click)
+  map.setMaxBounds([[-85, -179], [85, 179]]);
+  map.setView(V.center, V.zoom, {animate:false});
+  map.setMaxBounds(V.bounds);
+
+  buildDayStrip(V);
+  activeDay = todayIndex(V);
+  syncDayStrip();
+  render();
+}
+
+/* ---------- day strip ---------- */
+function buildDayStrip(V){
+  stripEl.innerHTML = "";
+  const range = `${V.days[0].num}–${V.days[V.days.length - 1].num}`;
+  stripEl.appendChild(mkDay(null, "All", range));
+  V.days.forEach(d => stripEl.appendChild(mkDay(d.key, d.dow, d.num)));
+}
 function mkDay(key, dow, num){
   const b = document.createElement("button");
-  b.className = "day";
-  b.type = "button";
+  b.className = "day"; b.type = "button";
+  b.dataset.daykey = key === null ? "all" : String(key);
   b.setAttribute("aria-pressed", String(activeDay === key));
   b.innerHTML = `${dow}<span class="dnum">${num}</span>`;
   b.addEventListener("click", () => {
     activeDay = key;
-    [...stripEl.children].forEach(c => c.setAttribute("aria-pressed","false"));
-    b.setAttribute("aria-pressed","true");
+    syncDayStrip();
     render();
   });
   return b;
 }
+function syncDayStrip(){
+  [...stripEl.children].forEach(c => {
+    const k = c.dataset.daykey === "all" ? null : +c.dataset.daykey;
+    c.setAttribute("aria-pressed", String(k === activeDay));
+  });
+}
 
-const chipsEl = document.getElementById("chips");
+/* ---------- category chips (shared across legs) ---------- */
 Object.entries(CATS).forEach(([key, c]) => {
   const b = document.createElement("button");
-  b.className = "chip";
-  b.type = "button";
-  b.setAttribute("aria-pressed","true");
+  b.className = "chip"; b.type = "button";
+  b.setAttribute("aria-pressed", "true");
   b.innerHTML = `<span class="swatch" style="background:${c.color}"></span>${c.label}`;
   b.addEventListener("click", () => {
     const on = b.getAttribute("aria-pressed") === "true";
     if (on){ activeCats.delete(key); b.setAttribute("aria-pressed","false"); }
-    else { activeCats.add(key); b.setAttribute("aria-pressed","true"); }
+    else   { activeCats.add(key);    b.setAttribute("aria-pressed","true"); }
     render();
   });
   chipsEl.appendChild(b);
 });
 
 /* ---------- render ---------- */
-const listEl = document.getElementById("list");
-const headEl = document.getElementById("panelhead");
-const panelEl = document.querySelector(".panel");
-
 function visible(p){
   if (!activeCats.has(p.cat)) return false;
   if (activeDay === null) return true;
-  return p.days[activeDay] !== 0;         // closed (0) hidden; open (1) & unconfirmed (2) stay
+  return p.days[activeDay] !== 0;           // closed (0) hidden; open (1) & unconfirmed (2) stay
 }
 
 function render(){
-  const shown = PLACES.map((p,i) => ({p,i})).filter(o => visible(o.p));
+  const V = VIEWS[currentKey];
+  const shown = V.places.map((p,i) => ({p,i})).filter(o => visible(o.p));
 
   markers.forEach((m,i) => {
-    const on = visible(PLACES[i]);
+    const on = visible(V.places[i]);
     if (on && !map.hasLayer(m)) m.addTo(map);
     if (!on && map.hasLayer(m)) map.removeLayer(m);
   });
 
   const dayName = activeDay === null
-    ? "all five days"
-    : `${DAYS[activeDay].dow} ${DAYS[activeDay].num} July`;
+    ? `all ${V.days.length} days`
+    : `${V.days[activeDay].dow} ${V.days[activeDay].num} ${V.month}`;
   headEl.innerHTML = `<b>${shown.length}</b> open · ${dayName}`;
 
   if (!shown.length){
@@ -513,7 +545,7 @@ function render(){
     const colour = CATS[p.cat].color;
     const cells = p.days.map((v,di) => {
       const cls = v === 1 ? "dcell on" : v === 2 ? "dcell maybe" : "dcell";
-      return `<span class="${cls}" title="${DAYS[di].dow} ${DAYS[di].num}">${DLETTER[di]}</span>`;
+      return `<span class="${cls}" title="${V.days[di].dow} ${V.days[di].num}">${V.dletter[di]}</span>`;
     }).join("");
     const babyCls = /not suitable/i.test(p.baby) ? "nobaby" : "baby";
     return `<article class="card" data-idx="${i}" tabindex="0" role="button"
@@ -544,13 +576,11 @@ function render(){
 }
 
 function lightPin(idx, on){
-  const el = markers[idx].getElement();
+  const el = markers[idx] && markers[idx].getElement();
   if (el) el.classList.toggle("lit", on);
 }
 
-// Scroll the matching card into view WITHIN the panel only. On mobile the panel
-// isn't an independent scroll container, so this is a no-op and the page never
-// jumps away from the map.
+// Scroll the matching card into view WITHIN the panel only — never the page.
 function scrollCardIntoPanel(idx){
   const card = listEl.querySelector(`.card[data-idx="${idx}"]`);
   if (!card) return;
@@ -563,7 +593,8 @@ function scrollCardIntoPanel(idx){
   }
 }
 
-render();
+/* ---------- go ---------- */
+switchView("belfast");
 </script>
 </body>
 </html>
