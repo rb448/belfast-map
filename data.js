@@ -465,6 +465,208 @@ const PLACES_DUBLIN = [
     cost:"€€", area:"Grafton St", baby:"Spacious · high chairs · pram-friendly",
     flag:"Open all four days",
     url:"https://bewleysgraftonstreet.com/opening-hours/"
+  },
+
+  /* ---- added: interesting / non-touristy Dublin, verified Aug 2026 ---- */
+  {
+    name:"Variety Jones", cat:"meal",
+    lat:53.3435, lng:-6.2830, days:[1,0,0,0],
+    why:"The Higgs brothers' live-fire cooking — Dublin's cult Michelin-starred modern-Irish room in the Liberties.",
+    cost:"€€€", area:"Thomas St, The Liberties", baby:"Small evening room — an adults' dinner",
+    flag:"Michelin · Wed–Sat dinner — Sat only this week, book",
+    url:"https://www.varietyjones.ie/"
+  },
+  {
+    name:"Bastible", cat:"meal",
+    lat:53.3345, lng:-6.2790, days:[1,1,0,0],
+    why:"A one-room neighbourhood Michelin star in Portobello; the weekend set lunch is the local move.",
+    cost:"€€€", area:"South Circular Rd", baby:"Tight room — lunch is easiest",
+    flag:"Michelin · Sun lunch 12:30–15:30 · closed Mon–Tue",
+    url:"https://www.bastible.com/food"
+  },
+  {
+    name:"Assassination Custard", cat:"meal",
+    lat:53.3378, lng:-6.2670, days:[0,0,0,1],
+    why:"An 8-seat, menu-on-a-paper-bag legend near Kevin St — Dublin's most-loved tiny lunch counter.",
+    cost:"€€", area:"Kevin St Lower", baby:"8 seats — no pram room",
+    flag:"Lunch only, Tue–Fri · phone ahead", tel:"+353879971513",
+    url:"https://www.theinfatuation.com/dublin/reviews/assassination-custard"
+  },
+  {
+    name:"Fish Shop", cat:"meal",
+    lat:53.3480, lng:-6.2870, days:[1,1,0,1],
+    why:"Tiny fish-and-chips with thirty wines by the glass — the Stoneybatter wine-bar crowd's favourite.",
+    cost:"€€", area:"Benburb St, Stoneybatter", baby:"Casual but tight",
+    flag:"Tue–Sun · closed Mon",
+    url:"https://fish-shop.ie/"
+  },
+  {
+    name:"Klaw", cat:"meal",
+    lat:53.3453, lng:-6.2635, days:[1,1,1,1],
+    why:"Achill oysters three ways from €2 at a fifteen-seat counter — a proper seafood shack in Temple Bar.",
+    cost:"€€", area:"Crown Alley, Temple Bar", baby:"~15 counter seats",
+    flag:"Open 7 days · 4–6pm oyster happy hour",
+    url:"https://klaw.ie/"
+  },
+  {
+    name:"Hang Dai", cat:"meal",
+    lat:53.3350, lng:-6.2640, days:[1,1,0,1],
+    why:"A basement disco-Chinese with a cult roast duck — one of Dublin's most distinctive dinners.",
+    cost:"€€€", area:"Camden St Lower", baby:"Dark, loud basement — not for an infant",
+    flag:"Tue–Sun · closed Mon",
+    url:"https://www.hangdaichinese.com/"
+  },
+  {
+    name:"M&L Sichuan", cat:"meal",
+    lat:53.3495, lng:-6.2600, days:[1,1,1,1],
+    why:"The city's real-deal Sichuan, off O'Connell St — where Dublin's Chinese community actually eats.",
+    cost:"€€", area:"Cathedral St", baby:"Big, busy, family-friendly",
+    flag:"Open 7 days incl. bank holiday",
+    url:"https://mlchineserestaurant.com/"
+  },
+  {
+    name:"Lucky Tortoise", cat:"meal",
+    lat:53.3400, lng:-6.2648, days:[1,1,1,1],
+    why:"Set dim-sum feasts at communal tables — the fun, unfussy antidote to a formal dinner.",
+    cost:"€€", area:"Aungier St", baby:"Communal tables — casual",
+    flag:"Use the Aungier St original (Temple Bar branch closed Mon)",
+    url:"https://www.luckytortoise.ie/"
+  },
+  {
+    name:"L. Mulligan Grocer", cat:"pub",
+    lat:53.3490, lng:-6.2870, days:[1,1,1,1],
+    why:"A craft-beer-and-whiskey gastropub with a famous Scotch egg, in the heart of Stoneybatter.",
+    cost:"€€", area:"Stoneybatter", baby:"Daytime and early evening fine",
+    flag:"Open 7 days · kitchen hours vary",
+    url:"https://www.lmulligangrocer.com/"
+  },
+  {
+    name:"Grogan's Castle Lounge", cat:"pub",
+    lat:53.3420, lng:-6.2630, days:[1,1,1,1],
+    why:"The artists' and writers' snug — no TVs, a legendary toasted special, unchanged for decades.",
+    cost:"€€", area:"South William St", baby:"Daytime only — traditional pub",
+    flag:"Open 7 days",
+    url:"https://www.groganspub.ie/"
+  },
+  {
+    name:"Pearse Lyons Distillery", cat:"still",
+    lat:53.3430, lng:-6.2930, days:[1,1,1,1],
+    why:"A working whiskey distillery inside a restored medieval church, with its own stained-glass windows.",
+    cost:"€€ tours", area:"James's St, The Liberties", baby:"Site pram-OK · 18+ tasting",
+    flag:"Open 7 days · pre-book the tour · verify bank hol",
+    url:"https://pearselyonsdistillery.com/"
+  },
+  {
+    name:"Glasnevin Food Market", cat:"market",
+    lat:53.376, lng:-6.279, days:[1,0,0,0],
+    why:"The former Honest2Goodness market — a genuine local Saturday food market, no tourists.",
+    cost:"€", area:"Slaney Rd, Glasnevin", baby:"Pram-friendly",
+    flag:"Saturdays only, ~9:30–15:30",
+    url:"https://www.honest2goodness.ie/"
+  },
+  {
+    name:"People's Park Market", cat:"market",
+    lat:53.293, lng:-6.133, days:[0,1,0,0],
+    why:"A seaside Sunday food-and-craft market in a Victorian park by Dún Laoghaire's piers.",
+    cost:"€", area:"Dún Laoghaire", baby:"Very pram-friendly · playground on site",
+    flag:"Sundays only, 10–16",
+    url:"https://www.dunlaoghairetown.ie/peoples-park-market-dun-laoghaire"
+  },
+  {
+    name:"Casino at Marino", cat:"see",
+    lat:53.371, lng:-6.225, days:[1,1,1,1],
+    why:"A perfect neoclassical folly — a tiny palace of sixteen hidden rooms disguised as a single-room temple.",
+    cost:"~€5 tour", area:"Marino", baby:"Ground floor fine · tight spiral stairs above",
+    flag:"Guided tour only — email to book · confirm bank hol",
+    url:"https://heritageireland.ie/places-to-visit/casino-marino/"
+  },
+  {
+    name:"James Joyce Tower & Museum", cat:"see",
+    lat:53.290, lng:-6.113, days:[1,1,0,0],
+    why:"The free Martello tower where Ulysses opens, on the rocks at Sandycove — volunteer-run.",
+    cost:"Free", area:"Sandycove · DART", baby:"Steep spiral stair to the roof",
+    flag:"Wed–Sun · closed Mon & Tue",
+    url:"https://joycetower.ie/visit"
+  },
+  {
+    name:"The Forty Foot", cat:"air",
+    lat:53.290, lng:-6.114, days:[1,1,1,1],
+    why:"A historic open-water bathing spot off the Sandycove rocks — Dubliners swim here year-round.",
+    cost:"Free", area:"Sandycove · DART", baby:"Rocks & ladders · deep water",
+    flag:"Open-access · not lifeguarded",
+    url:"https://www.dlrcoco.ie/beaches/forty-foot"
+  },
+  {
+    name:"Great South Wall & Poolbeg Lighthouse", cat:"air",
+    lat:53.343, lng:-6.153, days:[1,1,1,1],
+    why:"Walk two kilometres out into Dublin Bay on an 18th-century sea wall to a red lighthouse.",
+    cost:"Free", area:"Ringsend · car", baby:"Uneven, exposed · unguarded edge",
+    flag:"Open-access · car park at the end of Pigeon House Rd",
+    url:"https://www.visitdublin.com/guides/south-wall-stroll"
+  },
+  {
+    name:"Iveagh Gardens", cat:"air",
+    lat:53.335, lng:-6.260, days:[1,1,1,1],
+    why:"Dublin's 'secret garden' behind the Concert Hall — a cascade, a maze and fountains few tourists find.",
+    cost:"Free", area:"off Clonmel St", baby:"Gravel paths · some steps",
+    flag:"Open-access · can close for summer concerts — verify",
+    url:"https://www.iveaghgardens.ie/plan-a-visit/"
+  },
+  {
+    name:"National Botanic Gardens", cat:"air",
+    lat:53.372, lng:-6.271, days:[1,1,1,1],
+    why:"Free Victorian curvilinear glasshouses and 15,000 plants, backing onto Glasnevin Cemetery.",
+    cost:"Free", area:"Glasnevin", baby:"Flat wide paths · pram-perfect",
+    flag:"Open 7 days incl. bank holiday",
+    url:"https://www.botanicgardens.ie/glasnevin/opening-hours/"
+  },
+  {
+    name:"Phoenix Park — wild deer", cat:"air",
+    lat:53.356, lng:-6.329, days:[1,1,1,1],
+    why:"Around 600 wild fallow deer roam Europe's largest walled city park — best near the Papal Cross at dawn or dusk.",
+    cost:"Free", area:"Phoenix Park", baby:"Flat wide paths · bikes ideal",
+    flag:"Open-access · keep your distance from the deer",
+    url:"https://www.phoenixpark.ie/"
+  },
+  {
+    name:"North Bull Island & Dollymount Strand", cat:"air",
+    lat:53.369, lng:-6.149, days:[1,1,1,1],
+    why:"A five-kilometre beach on a UNESCO biosphere island, reached across a wooden bridge.",
+    cost:"Free", area:"Clontarf · car", baby:"Firm low-tide sand",
+    flag:"Open-access · fast incoming tide — check tables",
+    url:"https://www.visitdublin.com/bull-island"
+  },
+  {
+    name:"Hellfire Club, Montpelier Hill", cat:"air",
+    lat:53.244, lng:-6.324, days:[1,1,1,1],
+    why:"A spooky ruined 1725 hunting lodge, wrapped in legend, atop a forest hill with city-wide views.",
+    cost:"Free", area:"Dublin Mountains · car", baby:"Steep rooty climb · use a carrier",
+    flag:"Car essential · arrive early, the car park fills",
+    url:"https://www.coillte.ie/site/hell-fire-club/"
+  },
+  {
+    name:"Killiney Hill", cat:"air",
+    lat:53.260, lng:-6.112, days:[1,1,1,1],
+    why:"'Ireland's Bay of Naples' — a hilltop obelisk panorama the locals prefer to Howth.",
+    cost:"Free", area:"Killiney · DART Dalkey", baby:"Paved but uphill, with steps",
+    flag:"Open-access · combine with Dalkey village",
+    url:"https://wildirishwalks.ie/killiney-hill-walk/"
+  },
+  {
+    name:"Blackrock Market", cat:"market",
+    lat:53.302, lng:-6.178, days:[1,1,1,0],
+    why:"A ramshackle weekend market village of antiques, vintage and food — a genuine local haunt.",
+    cost:"Free entry", area:"Blackrock · DART", baby:"Some tight aisles",
+    flag:"Sat, Sun & bank-hol Mon · closed Tue",
+    url:"https://www.theblackrockmarket.com/"
+  },
+  {
+    name:"Rathfarnham Castle", cat:"see",
+    lat:53.299, lng:-6.285, days:[1,1,1,2],
+    why:"Georgian interiors inside a fortified Elizabethan castle — quiet, and the most pram-friendly heritage site in Dublin.",
+    cost:"~€5", area:"Rathfarnham", baby:"Lift & ramps — pram-friendly",
+    flag:"Summer season · verify Tue hours",
+    url:"https://heritageireland.ie/places-to-visit/rathfarnham-castle/"
   }
 ];
 
